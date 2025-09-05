@@ -1,10 +1,12 @@
 // src/app/data/mock-api.ts
 
-export const fetchDashboardData = async (range: string) => {
+import { DashboardData } from "../page";
+
+export const fetchDashboardData = async (range: string): Promise<DashboardData> => {
   // Simulate API call with a delay
   return new Promise((resolve) => {
     setTimeout(() => {
-      let data;
+      let data: DashboardData;
       switch (range) {
         case "3 Days":
           data = {

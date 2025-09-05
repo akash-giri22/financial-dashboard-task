@@ -1,13 +1,22 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import useIsDark from "./hooks/useIsDark";
 import Charts from "./components/Charts";
 import DownloadPDF from "./components/DownloadPDF";
 import MiniStatCard from "./components/MiniStatCard";
 import { fetchDashboardData } from "./data/mock-api";
 
-interface DashboardData {
+// New interface for the monthly MIS chart data
+interface MonthlyMisData {
+  labels: string[];
+  datasets: {
+    label: string;
+    data: number[];
+    borderColor: string;
+  }[];
+}
+
+export interface DashboardData {
   mainStats: {
     aum: string;
     aumChange: string;
@@ -17,7 +26,7 @@ interface DashboardData {
   miniStats: { title: string; value: string; icon: string }[];
   charts: {
     sipBusiness: { labels: string[]; barData: number[]; lineData: number[] };
-    monthlyMis: any;
+    monthlyMis: MonthlyMisData;
   };
 }
 
@@ -52,11 +61,10 @@ export default function Dashboard() {
   const [range, setRange] = useState("7 Days");
   const [data, setData] = useState<DashboardData>(initialData);
   const [loading, setLoading] = useState(false);
-  const isDark = useIsDark();
 
   useEffect(() => {
     setLoading(true);
-    fetchDashboardData(range).then((fetchedData: any) => {
+    fetchDashboardData(range).then((fetchedData: DashboardData) => {
       setData(fetchedData);
       setLoading(false);
     });

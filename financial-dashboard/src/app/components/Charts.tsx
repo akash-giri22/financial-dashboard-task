@@ -11,11 +11,13 @@ import {
   Tooltip,
   Legend,
   BubbleController,
+  BarController,
+  LineController,
 } from "chart.js";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Line, Bubble, Chart } from "react-chartjs-2";
 
-// Register chart components
+// Register all necessary chart components for the application.
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -25,16 +27,33 @@ ChartJS.register(
   Title,
   Tooltip,
   Legend,
-  BubbleController
+  BubbleController,
+  BarController,
+  LineController
 );
+
+interface MonthlyMisData {
+  labels: string[];
+  datasets: {
+    label: string;
+    data: number[];
+    borderColor: string;
+  }[];
+}
 
 interface ChartsProps {
   sipBusinessData: { labels: string[]; barData: number[]; lineData: number[] };
-  monthlyMisData: any;
+  monthlyMisData: MonthlyMisData;
   loading: boolean;
 }
 
 export default function Charts({ sipBusinessData, monthlyMisData, loading }: ChartsProps) {
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
@@ -47,6 +66,11 @@ export default function Charts({ sipBusinessData, monthlyMisData, loading }: Cha
       },
     },
   };
+
+  // If the component is not yet mounted, don't render the charts
+  if (!isMounted) {
+    return null;
+  }
 
   // Bubble chart data (Clients)
   const bubbleData = {
@@ -93,7 +117,7 @@ export default function Charts({ sipBusinessData, monthlyMisData, loading }: Cha
             Download Report
           </button>
         </div>
-        <div className="h-80"> {/* Added a fixed height */}
+        <div className="h-80">
           {loading ? (
             <div className="flex items-center justify-center h-full">
               <div className="w-12 h-12 border-4 border-blue-500 border-dashed rounded-full animate-spin"></div>
@@ -112,7 +136,7 @@ export default function Charts({ sipBusinessData, monthlyMisData, loading }: Cha
             View Report
           </button>
         </div>
-        <div className="h-80"> {/* Added a fixed height */}
+        <div className="h-80">
           {loading ? (
             <div className="flex items-center justify-center h-full">
               <div className="w-12 h-12 border-4 border-purple-500 border-dashed rounded-full animate-spin"></div>
@@ -131,7 +155,7 @@ export default function Charts({ sipBusinessData, monthlyMisData, loading }: Cha
             View Report
           </button>
         </div>
-        <div className="h-80"> {/* Added a fixed height */}
+        <div className="h-80">
           {loading ? (
             <div className="flex items-center justify-center h-full">
               <div className="w-12 h-12 border-4 border-green-500 border-dashed rounded-full animate-spin"></div>
