@@ -1,4 +1,6 @@
 // src/app/hooks/useIsDark.tsx
+"use client";
+
 import { useEffect, useState } from "react";
 
 export default function useIsDark() {

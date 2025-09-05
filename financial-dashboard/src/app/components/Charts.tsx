@@ -12,6 +12,7 @@ import {
   Legend,
   BubbleController,
 } from "chart.js";
+import React from "react";
 import { Line, Bubble, Chart } from "react-chartjs-2";
 
 // Register chart components
@@ -27,7 +28,26 @@ ChartJS.register(
   BubbleController
 );
 
-export default function Charts() {
+interface ChartsProps {
+  sipBusinessData: { labels: string[]; barData: number[]; lineData: number[] };
+  monthlyMisData: any;
+  loading: boolean;
+}
+
+export default function Charts({ sipBusinessData, monthlyMisData, loading }: ChartsProps) {
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'top' as const,
+      },
+      title: {
+        display: false,
+      },
+    },
+  };
+
   // Bubble chart data (Clients)
   const bubbleData = {
     datasets: [
@@ -45,38 +65,19 @@ export default function Charts() {
 
   // SIP Business (Bar + Line combo)
   const barLineData = {
-    labels: ["Jan", "Feb", "Mar", "Apr", "May"],
+    labels: sipBusinessData.labels,
     datasets: [
       {
         type: "bar" as const,
         label: "SIP Business",
-        data: [120, 150, 180, 90, 200],
-        backgroundColor: "rgba(75, 192, 192, 0.5)",
+        data: sipBusinessData.barData,
+        backgroundColor: "rgba(128, 0, 128, 0.5)",
       },
       {
         type: "line" as const,
         label: "Growth",
-        data: [100, 130, 160, 80, 190],
-        borderColor: "rgba(255, 99, 132, 1)",
-        borderWidth: 2,
-      },
-    ],
-  };
-
-  // Monthly MIS (Multi-line chart)
-  const lineData = {
-    labels: ["Jan", "Feb", "Mar", "Apr", "May"],
-    datasets: [
-      {
-        label: "Revenue",
-        data: [65, 59, 80, 81, 56],
-        borderColor: "rgba(75,192,192,1)",
-        borderWidth: 2,
-      },
-      {
-        label: "Expenses",
-        data: [28, 48, 40, 19, 86],
-        borderColor: "rgba(255,99,132,1)",
+        data: sipBusinessData.lineData,
+        borderColor: "rgba(54, 162, 235, 1)",
         borderWidth: 2,
       },
     ],
@@ -92,7 +93,15 @@ export default function Charts() {
             Download Report
           </button>
         </div>
-        <Bubble data={bubbleData} />
+        <div className="h-80"> {/* Added a fixed height */}
+          {loading ? (
+            <div className="flex items-center justify-center h-full">
+              <div className="w-12 h-12 border-4 border-blue-500 border-dashed rounded-full animate-spin"></div>
+            </div>
+          ) : (
+            <Bubble data={bubbleData} options={chartOptions} />
+          )}
+        </div>
       </div>
 
       {/* SIP Business (Bar + Line) */}
@@ -103,7 +112,15 @@ export default function Charts() {
             View Report
           </button>
         </div>
-        <Chart type="bar" data={barLineData} />
+        <div className="h-80"> {/* Added a fixed height */}
+          {loading ? (
+            <div className="flex items-center justify-center h-full">
+              <div className="w-12 h-12 border-4 border-purple-500 border-dashed rounded-full animate-spin"></div>
+            </div>
+          ) : (
+            <Chart type="bar" data={barLineData} options={chartOptions} />
+          )}
+        </div>
       </div>
 
       {/* Monthly MIS Chart */}
@@ -114,7 +131,15 @@ export default function Charts() {
             View Report
           </button>
         </div>
-        <Line data={lineData} />
+        <div className="h-80"> {/* Added a fixed height */}
+          {loading ? (
+            <div className="flex items-center justify-center h-full">
+              <div className="w-12 h-12 border-4 border-green-500 border-dashed rounded-full animate-spin"></div>
+            </div>
+          ) : (
+            <Line data={monthlyMisData} options={chartOptions} />
+          )}
+        </div>
       </div>
     </div>
   );

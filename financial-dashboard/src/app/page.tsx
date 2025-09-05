@@ -1,17 +1,66 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import useIsDark from "./hooks/useIsDark";
 import Charts from "./components/Charts";
 import DownloadPDF from "./components/DownloadPDF";
+import MiniStatCard from "./components/MiniStatCard";
+import { fetchDashboardData } from "./data/mock-api";
+
+interface DashboardData {
+  mainStats: {
+    aum: string;
+    aumChange: string;
+    sip: string;
+    sipChange: string;
+  };
+  miniStats: { title: string; value: string; icon: string }[];
+  charts: {
+    sipBusiness: { labels: string[]; barData: number[]; lineData: number[] };
+    monthlyMis: any;
+  };
+}
+
+const initialData: DashboardData = {
+  mainStats: {
+    aum: "₹12.19 Cr",
+    aumChange: "+0.77%",
+    sip: "₹1.39 Lakh",
+    sipChange: "+0.0%",
+  },
+  miniStats: [
+    { title: "Purchases", value: "₹0.00 Cr", icon: "🛒" },
+    { title: "Redemptions", value: "₹0.00 Cr", icon: "💳" },
+    { title: "Rejected Txns", value: "₹0.00 Cr", icon: "🚫" },
+    { title: "SIP Rejections", value: "₹0.00 Cr", icon: "❌" },
+    { title: "New SIP", value: "₹0.00 Cr", icon: "🆕" },
+  ],
+  charts: {
+    sipBusiness: {
+      labels: [],
+      barData: [],
+      lineData: [],
+    },
+    monthlyMis: {
+      labels: [],
+      datasets: [],
+    },
+  },
+};
 
 export default function Dashboard() {
   const [range, setRange] = useState("7 Days");
+  const [data, setData] = useState<DashboardData>(initialData);
+  const [loading, setLoading] = useState(false);
   const isDark = useIsDark();
 
-  // Dynamic colors for dark mode
-  const aumColor = isDark ? "#60a5fa" : "#0088FE";
-  const sipColor = isDark ? "#fb923c" : "#FF8042";
+  useEffect(() => {
+    setLoading(true);
+    fetchDashboardData(range).then((fetchedData: any) => {
+      setData(fetchedData);
+      setLoading(false);
+    });
+  }, [range]);
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-black dark:text-white p-6">
@@ -21,7 +70,7 @@ export default function Dashboard() {
         <DownloadPDF />
       </div>
 
-      {/* ---- AUM & SIP Cards (Matching image layout) ---- */}
+      {/* ---- AUM & SIP Cards ---- */}
       <div className="grid md:grid-cols-2 gap-6 mb-6">
         <div className="p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-lg">
           <div className="flex justify-between items-center">
@@ -30,9 +79,11 @@ export default function Dashboard() {
               View Report
             </button>
           </div>
-          <p className="text-2xl font-bold mt-2">₹12.19 Cr</p>
+          <p className="text-2xl font-bold mt-2">{data.mainStats.aum}</p>
           <div className="flex items-center mt-1">
-            <span className="text-green-600 text-sm mr-2">+0.77% MoM</span>
+            <span className={`text-sm mr-2 ${data.mainStats.aumChange.includes('+') ? "text-green-600" : "text-red-600"}`}>
+              {data.mainStats.aumChange} MoM
+            </span>
             <span className="text-blue-600 text-sm hover:underline cursor-pointer">
               View Trend
             </span>
@@ -46,9 +97,11 @@ export default function Dashboard() {
               View Report
             </button>
           </div>
-          <p className="text-2xl font-bold mt-2">₹1.39 Lakh</p>
+          <p className="text-2xl font-bold mt-2">{data.mainStats.sip}</p>
           <div className="flex items-center mt-1">
-            <span className="text-red-600 text-sm mr-2">-0% MoM</span>
+            <span className={`text-sm mr-2 ${data.mainStats.sipChange.includes('+') ? "text-green-600" : "text-red-600"}`}>
+              {data.mainStats.sipChange} MoM
+            </span>
             <span className="text-blue-600 text-sm hover:underline cursor-pointer">
               View Trend
             </span>
@@ -73,30 +126,19 @@ export default function Dashboard() {
         ))}
       </div>
 
-      {/* ---- Stat Cards (Matching image layout) ---- */}
+      {/* ---- Stat Cards ---- */}
       <div className="grid md:grid-cols-5 gap-4 mb-6">
-        {[
-          { title: "Purchases", value: "₹0.00 Cr", icon: "🛒", change: "7" },
-          { title: "Redemptions", value: "₹0.00 Cr", icon: "💳", change: "0" },
-          { title: "Rejected Txns", value: "₹0.00 Cr", icon: "🚫", change: "0" },
-          { title: "SIP Rejections", value: "₹0.00 Cr", icon: "❌", change: "0" },
-          { title: "New SIP", value: "₹0.00 Cr", icon: "🆕", change: "0" },
-        ].map((stat, i) => (
-          <div
-            key={i}
-            className="p-4 bg-white dark:bg-gray-800 rounded-2xl shadow hover:shadow-md transition-shadow flex flex-col items-center text-center"
-          >
-            <div className="text-3xl mb-2">{stat.icon}</div>
-            <h3 className="text-sm font-medium text-gray-600 dark:text-gray-300">
-              {stat.title}
-            </h3>
-            <p className="text-xl font-bold mt-1">{stat.value}</p>
-          </div>
+        {data.miniStats.map((stat, i) => (
+          <MiniStatCard key={i} title={stat.title} value={stat.value} icon={stat.icon} />
         ))}
       </div>
 
-      {/* ---- Charts Section (from Charts.tsx) ---- */}
-      <Charts />
+      {/* ---- Charts Section ---- */}
+      <Charts
+        sipBusinessData={data.charts.sipBusiness}
+        monthlyMisData={data.charts.monthlyMis}
+        loading={loading}
+      />
     </div>
   );
 }
